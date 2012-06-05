@@ -424,6 +424,8 @@ class VCAP::Services::Postgresql::Node
         else
           do_create = true
           db_connection.query("grant create on schema public to public")
+          db_connection.query("GRANT TEMPORARY ON DATABASE #{name} to #{sys_user}")
+          db_connection.query("GRANT TEMPORARY ON DATABASE #{name} to #{user}")
           if get_postgres_version(db_connection) == '9'
             db_connection.query("grant all on all tables in schema public to public")
             db_connection.query("grant all on all sequences in schema public to public")
@@ -453,7 +455,7 @@ class VCAP::Services::Postgresql::Node
       false
     end
   end
-  
+
   def alter_default_privileges(user,password,db_name,grant_or_revoke_all="GRANT ALL")
     begin
       to_from = /GRANT/ =~ grant_or_revoke_all ? "TO" : "FROM"
@@ -507,7 +509,7 @@ class VCAP::Services::Postgresql::Node
       if (binduser_to_reassign && binduser_to_reassign!=binduser)
         @logger.info("Reassigned owned by #{binduser.user}/#{binduser.sys_user} to #{binduser_to_reassign.user}/#{binduser_to_reassign.sys_user}")
         db_connection.query("REASSIGN OWNED BY #{binduser.user} TO #{binduser_to_reassign.user}")
-        db_connection.query("REASSIGN OWNED BY #{binduser.sys_user} TO #{binduser_to_reassign.sys_user}")       
+        db_connection.query("REASSIGN OWNED BY #{binduser.sys_user} TO #{binduser_to_reassign.sys_user}")
         @logger.info("Reassigned owned by owned by users #{binduser.user}/#{binduser.sys_user} to #{binduser_to_reassign.user}/#{binduser_to_reassign.sys_user}")
       else
         @logger.info("Drop owned by users #{binduser.user}/#{binduser.sys_user}")
